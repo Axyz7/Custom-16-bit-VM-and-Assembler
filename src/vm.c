@@ -44,4 +44,15 @@ void init_vm(VirtualMachine* vm){
     vm->is_running=true;
 }
 
+uint8_t fetch_byte(VirtualMachine* vm){
+    uint8_t data=vm->memory[vm->pc];
+    vm->pc++;
+    return data;
+}
+
+uint16_t fetch_word(VirtualMachine* vm){
+    uint8_t low_byte=fetch_byte(vm);
+    uint8_t high_byte=fetch_byte(vm);
+    return (high_byte<<8)|low_byte;
+}
 
