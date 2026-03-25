@@ -101,6 +101,29 @@ void execute_instruction(VirtualMachine* vm, uint8_t opcode){
             vm->nf=(res & 0x8000)!=0;
             break;
         }
+        case OP_CMP:{
+            uint8_t regA=fetch_byte(vm);
+            uint8_t regB=fetch_byte(vm);
+            uint16_t res= vm->registers[regA]-vm->registers[regB];
+            vm->zf=(res==0);
+            vm->nf=(res&0x8000)!=0;
+            break;
+        }
+        case OP_JMP:{
+            uint16_t addr=fetch_word(vm);
+            vm->pc=addr;
+            break;
+        }
+        case OP_JEQ:{
+            uint16_t addr=fetch_word(vm);
+            if(vm->zf) vm->pc=addr;
+            break;
+        }
+        case OP_JNE:{
+            uint16_t addr = fetch_word(vm);
+            if(!vm->zf) vm->pc=addr;
+            break;
+        }
         case OP_PRINT:{
             uint8_t reg=fetch_byte(vm);
             printf("PRINT OUTPUT: %d (0x%04X)\n",vm->registers[reg],vm->registers[reg]);
