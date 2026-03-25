@@ -56,3 +56,39 @@ uint16_t fetch_word(VirtualMachine* vm){
     return (high_byte<<8)|low_byte;
 }
 
+void execute_instruction(VirtualMachine* vm, uint8_t opcode){
+    switch(opcode){
+        case OP_LOAD_VAL:{
+            uint8_t reg=fetch_byte(vm);
+            uint16_t val=fetch_word(vm);
+            vm->registers[reg]=val;
+            break;
+        }
+        case OP_ADD:{
+            uint8_t regA=fetch_byte(vm);
+            uint8_t regB=fetch_byte(vm);
+
+            uint16_t result=vm->registers[regA]+vm->registers[regB];
+            vm->registers[regA]=result;
+
+            vm->zf=(result==0);
+            vm->nf=(result & 0x8000)!=0; //check if highest bit is 1
+            break;
+        }
+        case OP_PRINT:{
+            uint8_t reg=fetch_byte(vm);
+            printf("PRINT OUTPUT: %d (0x%04X)\n",vm->registers[reg],vm->registers[reg]);
+            break;
+        }
+        case OP_HALT:{
+            uint8_t reg=fetch_byte(vm);
+            vm->is_running=false;
+            break;
+        }
+        default:{
+            printf("ERROR: Unknown Opcode 0x%02X at PC 0x%04X\n", opcode, vm->pc-1);
+            vm->is_running=false;
+            break;
+        }
+    }
+}
