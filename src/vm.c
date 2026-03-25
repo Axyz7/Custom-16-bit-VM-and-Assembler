@@ -148,7 +148,6 @@ void execute_instruction(VirtualMachine* vm, uint8_t opcode){
             break;
         }
         case OP_HALT:{
-            uint8_t reg=fetch_byte(vm);
             vm->is_running=false;
             break;
         }
