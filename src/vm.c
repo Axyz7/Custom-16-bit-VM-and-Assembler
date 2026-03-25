@@ -92,3 +92,13 @@ void execute_instruction(VirtualMachine* vm, uint8_t opcode){
         }
     }
 }
+
+void run_vm(VirtualMachine* vm){
+    printf("---Booting Virtual Machine---\n");
+    while(vm->is_running && vm->pc<MEMORY_SIZE){
+        uint8_t opcode=fetch_byte(vm);
+        execute_instruction(vm,opcode);
+    }
+    printf("---VM Shut Down---\n");
+}
+
