@@ -55,6 +55,12 @@ void write_mem16(VirtualMachine* vm, uint16_t addr, uint16_t val){
     vm->memory[addr+1]=(val>>8);   //high byte
 }
 
+uint16_t read_mem16(VirtualMachine* vm,uint16_t addr){
+    uint8_t low=vm->memory[addr];
+    uint8_t high=vm->memory[addr+1];
+    return (high<<8)|low;
+}
+
 void execute_instruction(VirtualMachine* vm, uint8_t opcode){
     switch(opcode){
         case OP_LOAD_VAL:{
@@ -124,6 +130,18 @@ void execute_instruction(VirtualMachine* vm, uint8_t opcode){
             if(!vm->zf) vm->pc=addr;
             break;
         }
+        case OP_PUSH:{
+            uint8_t reg=fetch_byte(vm);
+            vm->sp-=2;
+            write_mem16(vm,vm->sp,vm->registers[reg]);
+            break;
+        }
+        case OP_POP:{
+            uint8_t reg=fetch_byte(vm);
+            vm->registers[reg]=read_mem16(vm,vm->sp);
+            vm->sp+=2;
+            break;
+        }
         case OP_PRINT:{
             uint8_t reg=fetch_byte(vm);
             printf("PRINT OUTPUT: %d (0x%04X)\n",vm->registers[reg],vm->registers[reg]);
@@ -135,7 +153,7 @@ void execute_instruction(VirtualMachine* vm, uint8_t opcode){
             break;
         }
         default:{
-            printf("ERROR: Unknown Opcode 0x%02X at PC 0x%04X\n", opcode, vm->pc-1);
+            printf("FATAL ERROR: Unknown Opcode 0x%02X at PC 0x%04X\n", opcode, vm->pc-1);
             vm->is_running=false;
             break;
         }
