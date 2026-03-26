@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include "../include/vm.h"
 
 #define MEMORY_SIZE 65536 //64kb RAM
 
@@ -21,15 +22,8 @@
 #define OP_PRINT 0xF0
 #define OP_HALT  0xFF
 
-typedef struct{
-    uint8_t memory[MEMORY_SIZE];
-    uint16_t registers[4];
-    uint16_t pc;
-    uint16_t sp;
-    bool zf;  //zero flag
-    bool nf;  //negative flag
-    bool is_running;
-} VirtualMachine;
+
+
 
 void init_vm(VirtualMachine* vm){
     for(int i=0;i<MEMORY_SIZE;i++) vm->memory[i]=0;
@@ -75,7 +69,7 @@ void execute_instruction(VirtualMachine* vm, uint8_t opcode){
             vm->registers[reg]=read_mem16(vm, addr);
             break;
         }
-        case OP_STORE_MEM:{eck the vm.h or vm.c file Aryan mentioned to see exactly how the VirtualMachine struct is defined.
+        case OP_STORE_MEM:{
             uint16_t addr=fetch_word(vm);
             uint8_t reg=fetch_byte(vm);
             write_mem16(vm,addr,vm->registers[reg]);
@@ -199,8 +193,33 @@ int main() {
     // 5. HALT
     my_vm.memory[13] = OP_HALT;
 
+
+    
+    VirtualMachine MyVm;
+    init_vm(&MyVm);
+    printf("-----VM--Memory--------\n");
+
+    uint16_t test_adr = 0x4321; //Decimal: 17185
+    uint8_t test_val = 0xAB; //Decimal: 171
+
+    printf("Writing 0x%X to the address 0x%04X\n",test_val,test_adr);
+    write_memory(&MyVm,test_adr,test_val);
+
+    uint8_t retrieved = read_memory(&MyVm,test_adr);
+    printf("retrieved value : 0x%X\n",retrieved);
+
+    if(retrieved == test_val){
+        printf("SUCCESS: Memory Integrity Verified!\n");
+    }
+    else{
+        printf("ERROR: Memory Mismatch!\n");
+    }
+    
+
     // Run it!
     run_vm(&my_vm);
+
+
 
     return 0;
 }
