@@ -75,7 +75,7 @@ void execute_instruction(VirtualMachine* vm, uint8_t opcode){
             vm->registers[reg]=read_mem16(vm, addr);
             break;
         }
-        case OP_STORE_MEM:{
+        case OP_STORE_MEM:{eck the vm.h or vm.c file Aryan mentioned to see exactly how the VirtualMachine struct is defined.
             uint16_t addr=fetch_word(vm);
             uint8_t reg=fetch_byte(vm);
             write_mem16(vm,addr,vm->registers[reg]);
