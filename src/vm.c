@@ -1,5 +1,5 @@
 #include "../include/vm.h"
-
+#include "../include/Memory.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
