@@ -1,8 +1,8 @@
 #ifndef VM_H
 #define VM_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #define MEMORY_SIZE 65536
 
@@ -17,6 +17,7 @@ typedef struct {
 } VirtualMachine;
 
 // "Function Prototypes" - The Contract
-void init_vm(VirtualMachine* vm);
+void init_vm(VirtualMachine *vm);
+
 
 #endif
