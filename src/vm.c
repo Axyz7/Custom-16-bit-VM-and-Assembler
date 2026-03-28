@@ -1,4 +1,5 @@
-#include "../include/vm.h"
+// #include "../include/vm.h"
+#include "vm.h"
 #include "../include/Memory.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -162,7 +163,8 @@ void run_vm(VirtualMachine *vm) {
     printf("---VM Shut Down---\n");
 }
 // for test
-int main() {
+// int main() 
+void test_cpu_logic(){
     VirtualMachine my_vm;
     init_vm(&my_vm);
 
@@ -215,5 +217,5 @@ int main() {
     // Run it!
     run_vm(&my_vm);
 
-    return 0;
+    // return 0;
 }

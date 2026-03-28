@@ -18,6 +18,5 @@ typedef struct {
 
 // "Function Prototypes" - The Contract
 void init_vm(VirtualMachine *vm);
-
-
+void test_cpu_logic(); // <-- ADD THIS LINE
 #endif

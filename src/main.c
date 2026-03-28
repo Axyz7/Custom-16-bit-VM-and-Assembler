@@ -4,29 +4,24 @@
 #include "Memory.h"
 
 int main(int argc, char *argv[]) {
-    // 1. Check if the user provided enough arguments
-    if (argc < 3) {
-        printf("Usage: ./vm <mode> <filename>\n");
-        printf("Modes: run, debug\n");
-        printf("Example: ./vm debug program.bin\n");
+
+    if (argc < 2) {
+        printf("Error: Please type 'run' or 'debug'.\n");
         return 1;
     }
 
-    // 2. Capture the mode and the file name
     char *mode = argv[1];
-    char *filename = argv[2];
 
-    // 3. Route to the correct logic using string comparison (strcmp)
+    // Simple Router
     if (strcmp(mode, "debug") == 0) {
-        printf("[SYSTEM]: Launching VM in DEBUG mode with file: %s\n", filename);
-        // We will call your step-by-step visual debugger function here later
+        printf("DEBUG MODE: Visual Debugger will go here in Phase 3.\n");
     } 
     else if (strcmp(mode, "run") == 0) {
-        printf("[SYSTEM]: Launching VM in RUN mode with file: %s\n", filename);
-        // We will call the standard execution loop here later
+        printf("[SYSTEM]: Launching RUN MODE...\n");
+        test_cpu_logic(); // <-- THIS IS WHERE WE CONNECT TO ARYAN'S CODE
     } 
     else {
-        printf("[ERROR]: Unknown mode '%s'. Use 'run' or 'debug'.\n", mode);
+        printf("Error: Unknown command.\n");
         return 1;
     }
 
