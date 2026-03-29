@@ -1,28 +1,7 @@
-// #include "../include/vm.h"
 #include "vm.h"
-#include "../include/Memory.h"
-#include <stdbool.h>
-#include <stdint.h>
+#include "Memory.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-#define MEMORY_SIZE 65536  // 64kb RAM
-
-// opcodes from ISA spec V1
-#define OP_LOAD_VAL 0x01
-#define OP_LOAD_MEM 0x02
-#define OP_STORE_MEM 0x03
-#define OP_MOV_REG 0x04
-#define OP_ADD 0x10
-#define OP_SUB 0x11
-#define OP_CMP 0x12
-#define OP_JMP 0x20
-#define OP_JEQ 0x21
-#define OP_JNE 0x22
-#define OP_PUSH 0x30
-#define OP_POP 0x31
-#define OP_PRINT 0xF0
-#define OP_HALT 0xFF
 
 void init_vm(VirtualMachine *vm) {
     for (int i = 0; i < MEMORY_SIZE; i++)
@@ -46,13 +25,13 @@ uint16_t fetch_word(VirtualMachine *vm) {
 }
 
 void write_mem16(VirtualMachine *vm, uint16_t addr, uint16_t val) {
-    vm->memory[addr] = val & 0xFF;      // low byte
-    vm->memory[addr + 1] = (val >> 8);  // high byte
+    write_memory(vm,addr,val& 0xFF);      // low byte
+    write_memory(vm,addr+1, (val>>8));  // high byte
 }
 
 uint16_t read_mem16(VirtualMachine *vm, uint16_t addr) {
-    uint8_t low = vm->memory[addr];
-    uint8_t high = vm->memory[addr + 1];
+    uint8_t low = read_memory(vm,addr);
+    uint8_t high = read_memory(vm,addr+1);
     return (high << 8) | low;
 }
 
@@ -156,66 +135,9 @@ void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
 
 void run_vm(VirtualMachine *vm) {
     printf("---Booting Virtual Machine---\n");
-    while (vm->is_running && vm->pc < MEMORY_SIZE) {
+    while (vm->is_running) {
         uint8_t opcode = fetch_byte(vm);
         execute_instruction(vm, opcode);
     }
     printf("---VM Shut Down---\n");
-}
-// for test
-// int main() 
-void test_cpu_logic(){
-    VirtualMachine my_vm;
-    init_vm(&my_vm);
-
-    // Hardcoding a test program into memory:
-    // LOAD_VAL R1, 15 | LOAD_VAL R2, 10 | SUB R1, R2 | PRINT R1 | HALT
-
-    // 1. LOAD_VAL R1, 15 (0x0F)
-    my_vm.memory[0] = OP_LOAD_VAL;
-    my_vm.memory[1] = 0x01;  // R1
-    my_vm.memory[2] = 0x0F;  // Low byte of 15
-    my_vm.memory[3] = 0x00;  // High byte of 15
-
-    // 2. LOAD_VAL R2, 10 (0x0A)
-    my_vm.memory[4] = OP_LOAD_VAL;
-    my_vm.memory[5] = 0x02;  // R2
-    my_vm.memory[6] = 0x0A;  // Low byte of 10
-    my_vm.memory[7] = 0x00;  // High byte of 10
-
-    // 3. SUB R1, R2
-    my_vm.memory[8] = OP_SUB;
-    my_vm.memory[9] = 0x01;   // R1
-    my_vm.memory[10] = 0x02;  // R2
-
-    // 4. PRINT R1
-    my_vm.memory[11] = OP_PRINT;
-    my_vm.memory[12] = 0x01;  // R1
-
-    // 5. HALT
-    my_vm.memory[13] = OP_HALT;
-
-    VirtualMachine MyVm;
-    init_vm(&MyVm);
-    printf("-----VM--Memory--------\n");
-
-    uint16_t test_adr = 0x4321;  // Decimal: 17185
-    uint8_t test_val = 0xAB;     // Decimal: 171
-
-    printf("Writing 0x%X to the address 0x%04X\n", test_val, test_adr);
-    write_memory(&MyVm, test_adr, test_val);
-
-    uint8_t retrieved = read_memory(&MyVm, test_adr);
-    printf("retrieved value : 0x%X\n", retrieved);
-
-    if (retrieved == test_val) {
-        printf("SUCCESS: Memory Integrity Verified!\n");
-    } else {
-        printf("ERROR: Memory Mismatch!\n");
-    }
-
-    // Run it!
-    run_vm(&my_vm);
-
-    // return 0;
 }
