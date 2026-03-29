@@ -43,5 +43,4 @@ void execute_instruction(VirtualMachine *vm, uint8_t opcode);
 void run_vm(VirtualMachine *vm);
 =======
 void test_cpu_logic();  // <-- ADD THIS LINE
->>>>>>> 0f1f01e (feat: implement memory stack (#8))
 #endif
