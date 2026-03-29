@@ -1,4 +1,4 @@
-#include "../include/vm.h"
+#include "vm.h"
 
 #include <stdbool.h>  // For true/false
 #include <stdint.h>   // For uint8_t and uint16_t
