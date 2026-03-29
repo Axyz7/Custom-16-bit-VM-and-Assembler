@@ -15,7 +15,7 @@ void init_vm(VirtualMachine *vm) {
 }
 
 uint8_t fetch_byte(VirtualMachine *vm) {
-    return vm->memory[vm->pc++];
+    return read_memory(vm,vm->pc++);
 }
 
 uint16_t fetch_word(VirtualMachine *vm) {
