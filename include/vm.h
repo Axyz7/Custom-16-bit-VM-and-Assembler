@@ -9,7 +9,7 @@
 typedef struct {
     uint8_t memory[MEMORY_SIZE];
     uint16_t registers[4];
-    uint16_t pc;
+    uint32_t pc;  // changed pc type ,as we want the pc to actually be able to reach or exceed the memory limit to trigger a stop,
     uint16_t sp;
     bool zf;
     bool nf;
@@ -34,10 +34,14 @@ typedef struct {
 
 // "Function Prototypes" - The Contract
 void init_vm(VirtualMachine *vm);
+<<<<<<< HEAD
 uint8_t fetch_byte(VirtualMachine *vm);
 uint16_t fetch_word(VirtualMachine *vm);
 void write_mem16(VirtualMachine *vm, uint16_t addr, uint16_t val) ;
 uint16_t read_mem16(VirtualMachine *vm, uint16_t addr);
 void execute_instruction(VirtualMachine *vm, uint8_t opcode);
 void run_vm(VirtualMachine *vm);
+=======
+void test_cpu_logic();  // <-- ADD THIS LINE
+>>>>>>> 0f1f01e (feat: implement memory stack (#8))
 #endif

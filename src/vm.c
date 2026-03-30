@@ -1,5 +1,9 @@
-#include "vm.h"
-#include "Memory.h"
+#include "../include/vm.h"
+
+#include "../include/Memory.h"
+
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,7 +13,7 @@ void init_vm(VirtualMachine *vm) {
     for (int i = 0; i < 4; i++)
         vm->registers[i] = 0;
     vm->pc = 0x0000;
-    vm->sp = 0xFFFF;  // stack grows downwards
+    vm->sp = 0xFFFD;  // stack grows downwards, changed the sp intial to down by 2 bytes because so that the stack pointer doesnt wraps around and always keep the pointer at the odd bits, such as 0xFFFD OR 0xFFFB , as suppose there was a pop func called when the sp was at 0xFFFE then the sp willl wrap to 0x0000
     vm->zf = false;
     vm->is_running = true;
 }
@@ -22,17 +26,6 @@ uint16_t fetch_word(VirtualMachine *vm) {
     uint8_t low_byte = fetch_byte(vm);
     uint8_t high_byte = fetch_byte(vm);
     return (high_byte << 8) | low_byte;  // little-endian
-}
-
-void write_mem16(VirtualMachine *vm, uint16_t addr, uint16_t val) {
-    write_memory(vm,addr,val& 0xFF);      // low byte
-    write_memory(vm,addr+1, (val>>8));  // high byte
-}
-
-uint16_t read_mem16(VirtualMachine *vm, uint16_t addr) {
-    uint8_t low = read_memory(vm,addr);
-    uint8_t high = read_memory(vm,addr+1);
-    return (high << 8) | low;
 }
 
 void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
@@ -106,14 +99,12 @@ void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
         }
         case OP_PUSH: {
             uint8_t reg = fetch_byte(vm);
-            vm->sp -= 2;
-            write_mem16(vm, vm->sp, vm->registers[reg]);
+            stack_push(vm, vm->registers[reg]);
             break;
         }
         case OP_POP: {
             uint8_t reg = fetch_byte(vm);
-            vm->registers[reg] = read_mem16(vm, vm->sp);
-            vm->sp += 2;
+            vm->registers[reg] = stack_pop(vm);
             break;
         }
         case OP_PRINT: {
