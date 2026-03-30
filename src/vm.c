@@ -1,6 +1,8 @@
 // #include "../include/vm.h"
 #include "vm.h"
+
 #include "../include/Memory.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -30,7 +32,7 @@ void init_vm(VirtualMachine *vm) {
     for (int i = 0; i < 4; i++)
         vm->registers[i] = 0;
     vm->pc = 0x0000;
-    vm->sp = 0xFFFF;  // stack grows downwards
+    vm->sp = 0xFFFD;  // stack grows downwards, changed the sp intial to down by 2 bytes because so that the stack pointer doesnt wraps around and always keep the pointer at the odd bits, such as 0xFFFD OR 0xFFFB , as suppose there was a pop func called when the sp was at 0xFFFE then the sp willl wrap to 0x0000
     vm->zf = false;
     vm->is_running = true;
 }
@@ -43,17 +45,6 @@ uint16_t fetch_word(VirtualMachine *vm) {
     uint8_t low_byte = fetch_byte(vm);
     uint8_t high_byte = fetch_byte(vm);
     return (high_byte << 8) | low_byte;  // little-endian
-}
-
-void write_mem16(VirtualMachine *vm, uint16_t addr, uint16_t val) {
-    vm->memory[addr] = val & 0xFF;      // low byte
-    vm->memory[addr + 1] = (val >> 8);  // high byte
-}
-
-uint16_t read_mem16(VirtualMachine *vm, uint16_t addr) {
-    uint8_t low = vm->memory[addr];
-    uint8_t high = vm->memory[addr + 1];
-    return (high << 8) | low;
 }
 
 void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
@@ -127,14 +118,12 @@ void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
         }
         case OP_PUSH: {
             uint8_t reg = fetch_byte(vm);
-            vm->sp -= 2;
-            write_mem16(vm, vm->sp, vm->registers[reg]);
+            stack_push(vm, vm->registers[reg]);
             break;
         }
         case OP_POP: {
             uint8_t reg = fetch_byte(vm);
-            vm->registers[reg] = read_mem16(vm, vm->sp);
-            vm->sp += 2;
+            vm->registers[reg] = stack_pop(vm);
             break;
         }
         case OP_PRINT: {
@@ -163,8 +152,8 @@ void run_vm(VirtualMachine *vm) {
     printf("---VM Shut Down---\n");
 }
 // for test
-// int main() 
-void test_cpu_logic(){
+// int main()
+void test_cpu_logic() {
     VirtualMachine my_vm;
     init_vm(&my_vm);
 
@@ -195,17 +184,15 @@ void test_cpu_logic(){
     // 5. HALT
     my_vm.memory[13] = OP_HALT;
 
-    VirtualMachine MyVm;
-    init_vm(&MyVm);
     printf("-----VM--Memory--------\n");
 
     uint16_t test_adr = 0x4321;  // Decimal: 17185
     uint8_t test_val = 0xAB;     // Decimal: 171
 
     printf("Writing 0x%X to the address 0x%04X\n", test_val, test_adr);
-    write_memory(&MyVm, test_adr, test_val);
+    write_mem16(&my_vm, test_adr, test_val);
 
-    uint8_t retrieved = read_memory(&MyVm, test_adr);
+    uint8_t retrieved = read_mem16(&my_vm, test_adr);
     printf("retrieved value : 0x%X\n", retrieved);
 
     if (retrieved == test_val) {
@@ -214,8 +201,20 @@ void test_cpu_logic(){
         printf("ERROR: Memory Mismatch!\n");
     }
 
-    // Run it!
     run_vm(&my_vm);
 
+    printf("\n--- Testing Stack Logic ---\n");
+    uint16_t val_to_push = 0x1234;
+    stack_push(&my_vm, val_to_push);
+    printf("Pushed: 0x%04X | SP is now: 0x%04X\n", val_to_push, my_vm.sp);
+
+    uint16_t popped_val = stack_pop(&my_vm);
+    printf("Popped: 0x%04X | SP is now: 0x%04X\n", popped_val, my_vm.sp);
+
+    if (val_to_push == popped_val) {
+        printf("STACK SUCCESS: Values match!\n");
+    } else {
+        printf("STACK ERROR: Value mismatch!\n");
+    }
     // return 0;
 }
