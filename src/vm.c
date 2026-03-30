@@ -1,6 +1,8 @@
 // #include "../include/vm.h"
 #include "vm.h"
+
 #include "../include/Memory.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -44,8 +46,6 @@ uint16_t fetch_word(VirtualMachine *vm) {
     uint8_t high_byte = fetch_byte(vm);
     return (high_byte << 8) | low_byte;  // little-endian
 }
-
-
 
 void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
     switch (opcode) {
@@ -118,7 +118,7 @@ void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
         }
         case OP_PUSH: {
             uint8_t reg = fetch_byte(vm);
-            stack_push(vm,vm->registers[reg]);
+            stack_push(vm, vm->registers[reg]);
             break;
         }
         case OP_POP: {
@@ -152,8 +152,8 @@ void run_vm(VirtualMachine *vm) {
     printf("---VM Shut Down---\n");
 }
 // for test
-// int main() 
-void test_cpu_logic(){
+// int main()
+void test_cpu_logic() {
     VirtualMachine my_vm;
     init_vm(&my_vm);
 
@@ -184,7 +184,6 @@ void test_cpu_logic(){
     // 5. HALT
     my_vm.memory[13] = OP_HALT;
 
-    
     printf("-----VM--Memory--------\n");
 
     uint16_t test_adr = 0x4321;  // Decimal: 17185
@@ -201,7 +200,6 @@ void test_cpu_logic(){
     } else {
         printf("ERROR: Memory Mismatch!\n");
     }
-
 
     run_vm(&my_vm);
 
