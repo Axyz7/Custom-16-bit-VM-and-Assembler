@@ -2,7 +2,10 @@
 
 #include "../include/memory.h"
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 331636b (style: reorder includes for consistency)
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
