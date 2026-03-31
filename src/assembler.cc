@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -81,4 +82,18 @@ void buildSymbolTable(vector<string> lines) {
         }
         address_counter += inst_addr;
     }
+}
+
+uint8_t parseRegister(string regStr) {
+    uint8_t regcode = regStr[1] - '0';
+    if (regcode > 3) {
+        std::cerr
+            << "[Fatal Error]: Unknown register "
+            << std::hex
+            << regcode
+            << " was found."
+            << std::endl;
+        exit(0);
+    }
+    return regcode;  // returns int, unnecessary to change to hex
 }
