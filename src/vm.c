@@ -2,6 +2,7 @@
 
 #include "../include/Memory.h"
 
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -13,6 +14,7 @@ void init_vm(VirtualMachine *vm) {
     for (int i = 0; i < 4; i++)
         vm->registers[i] = 0;
     vm->pc = 0x0000;
+    vm->sp = 0xFFFD;  // stack grows downwards, changed the sp intial to down by 2 bytes because so that the stack pointer doesnt wraps around and always keep the pointer at the odd bits, such as 0xFFFD OR 0xFFFB , as suppose there was a pop func called when the sp was at 0xFFFE then the sp willl wrap to 0x0000
     vm->sp = 0xFFFD;  // stack grows downwards, changed the sp intial to down by 2 bytes because so that the stack pointer doesnt wraps around and always keep the pointer at the odd bits, such as 0xFFFD OR 0xFFFB , as suppose there was a pop func called when the sp was at 0xFFFE then the sp willl wrap to 0x0000
     vm->zf = false;
     vm->is_running = true;
@@ -100,10 +102,12 @@ void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
         case OP_PUSH: {
             uint8_t reg = fetch_byte(vm);
             stack_push(vm, vm->registers[reg]);
+            stack_push(vm, vm->registers[reg]);
             break;
         }
         case OP_POP: {
             uint8_t reg = fetch_byte(vm);
+            vm->registers[reg] = stack_pop(vm);
             vm->registers[reg] = stack_pop(vm);
             break;
         }
