@@ -1,6 +1,6 @@
 #include "../include/vm.h"
 
-#include "../include/Memory.h"
+#include "../include/memory.h"
 
 
 #include <stdbool.h>

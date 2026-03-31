@@ -1,4 +1,4 @@
-#include "../include/Memory.h"
+#include "../include/memory.h"
 
 #include "../include/vm.h"
 
