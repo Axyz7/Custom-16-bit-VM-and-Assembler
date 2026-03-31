@@ -3,8 +3,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "vm.h"
-#include "Memory.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
