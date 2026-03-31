@@ -32,6 +32,29 @@ vector<string> tokenize(string &line) {
     return tokens;
 }
 
+uint16_t getInstructionSize(const string &mnemonic) {
+    std::map<string, uint16_t> inst_addr = {
+        {"HALT", 1},
+        {"PUSH", 2},
+        {"POP", 2},
+        {"PRINT", 2},
+        {"MOV_REG", 3},
+        {"ADD", 3},
+        {"SUB", 3},
+        {"CMP", 3},
+        {"JMP", 3},
+        {"JEQ", 3},
+        {"JNE", 3},
+        {"LOAD_VAL", 4},
+        {"LOAD_MEM", 4},
+        {"STORE_MEM", 4},
+    };
+    if (inst_addr.find(mnemonic) != inst_addr.end()) {
+        return inst_addr[mnemonic];
+    }
+    return 0;  // Error case
+}
+
 void buildSymbolTable(vector<string> lines) {
     size_t total_lines = lines.size();
     uint16_t address_counter = 0;
@@ -44,6 +67,9 @@ void buildSymbolTable(vector<string> lines) {
         if (first != string::npos) {
             symbol_table[tokens[0].substr(0, (first))] = address_counter;
         }
-        address_counter += 4;  // 4 bytes per instruction
+        uint16_t inst_addr = getInstructionSize(tokens[0]);
+        if (inst_addr > 0) {
+            address_counter += inst_addr;
+        }
     }
 }
