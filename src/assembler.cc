@@ -1,3 +1,4 @@
+#include <iostream>
 #include <map>
 #include <sstream>
 
@@ -62,14 +63,22 @@ void buildSymbolTable(vector<string> lines) {
     vector<string> tokens;
 
     for (auto &line : lines) {
+        uint16_t line_no = 1;
         tokens = tokenize(line);
         size_t first = tokens[0].find_first_of(":");
         if (first != string::npos) {
             symbol_table[tokens[0].substr(0, (first))] = address_counter;
         }
         uint16_t inst_addr = getInstructionSize(tokens[0]);
-        if (inst_addr > 0) {
-            address_counter += inst_addr;
+        if (inst_addr == 0) {
+            std::cerr
+                << "[Fatal Error]: Unknown instruction "
+                << tokens[0]
+                << " was found at line "
+                << line_no << "."
+                << std::endl;
+            exit(0);
         }
+        address_counter += inst_addr;
     }
 }
