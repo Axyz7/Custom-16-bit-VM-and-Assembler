@@ -63,8 +63,8 @@ void buildSymbolTable(vector<string> lines) {
     std::map<string, uint16_t> symbol_table;
     vector<string> tokens;
 
+    uint16_t line_no = 1;
     for (auto &line : lines) {
-        uint16_t line_no = 1;
         tokens = tokenize(line);
         size_t first = tokens[0].find_first_of(":");
         if (first != string::npos) {
@@ -81,6 +81,7 @@ void buildSymbolTable(vector<string> lines) {
             exit(0);
         }
         address_counter += inst_addr;
+        line_no++;
     }
 }
 
