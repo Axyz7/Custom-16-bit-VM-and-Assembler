@@ -101,12 +101,10 @@ void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
         case OP_PUSH: {
             uint8_t reg = fetch_byte(vm);
             stack_push(vm, vm->registers[reg]);
-            stack_push(vm, vm->registers[reg]);
             break;
         }
         case OP_POP: {
             uint8_t reg = fetch_byte(vm);
-            vm->registers[reg] = stack_pop(vm);
             vm->registers[reg] = stack_pop(vm);
             break;
         }
