@@ -56,6 +56,7 @@ uint16_t getInstructionSize(const string &mnemonic) {
         {"LOAD_MEM", 4},
         {"STORE_MEM", 4},
     };
+    
     if (inst_size.find(mnemonic) != inst_size.end()) {
         return inst_size[mnemonic];
     }
@@ -201,6 +202,7 @@ void assembleLine(vector<uint8_t> binary, vector<string> tokens, map<string, uin
                 << std::endl;
             exit(1);
         }
+
         uint16_t addr = symbols[tokens[1]];  // 16-bit address
         push16bits(binary, addr);
     } else if (tokens[0] == "JEQ") {
