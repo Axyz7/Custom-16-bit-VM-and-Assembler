@@ -3,6 +3,7 @@
 #include <map>
 #include <sstream>
 
+using std::map;
 using std::string;
 using std::vector;
 
@@ -35,7 +36,7 @@ vector<string> tokenize(string &line) {
 }
 
 uint16_t getInstructionSize(const string &mnemonic) {
-    std::map<string, uint16_t> inst_addr = {
+    std::map<string, uint16_t> inst_size = {
         {"HALT", 1},
         {"PUSH", 2},
         {"POP", 2},
@@ -51,13 +52,13 @@ uint16_t getInstructionSize(const string &mnemonic) {
         {"LOAD_MEM", 4},
         {"STORE_MEM", 4},
     };
-    if (inst_addr.find(mnemonic) != inst_addr.end()) {
-        return inst_addr[mnemonic];
+    if (inst_size.find(mnemonic) != inst_size.end()) {
+        return inst_size[mnemonic];
     }
     return 0;  // Error case
 }
 
-void buildSymbolTable(vector<string> lines) {
+map<string, uint16_t> buildSymbolTable(vector<string> lines) {
     size_t total_lines = lines.size();
     uint16_t address_counter = 0;
     std::map<string, uint16_t> symbol_table;
@@ -69,6 +70,7 @@ void buildSymbolTable(vector<string> lines) {
         size_t first = tokens[0].find_first_of(":");
         if (first != string::npos) {
             symbol_table[tokens[0].substr(0, (first))] = address_counter;
+            continue;
         }
         uint16_t inst_addr = getInstructionSize(tokens[0]);
         if (inst_addr == 0) {
@@ -78,11 +80,12 @@ void buildSymbolTable(vector<string> lines) {
                 << " was found at line "
                 << line_no << "."
                 << std::endl;
-            exit(0);
+            exit(1);
         }
         address_counter += inst_addr;
         line_no++;
     }
+    return symbol_table;
 }
 
 uint8_t parseRegister(string regStr) {
@@ -94,7 +97,7 @@ uint8_t parseRegister(string regStr) {
             << regcode
             << " was found."
             << std::endl;
-        exit(0);
+        exit(1);
     }
     return regcode;  // returns int, unnecessary to change to hex
 }
@@ -104,4 +107,157 @@ void push16bits(vector<uint8_t> &binary, uint16_t value) {
     // little endian byte order
     binary.push_back(value & 0xFF);
     binary.push_back((value >> 8) & 0xFF);
+}
+
+vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols) {
+    vector<uint8_t> binary;
+    if (tokens[0] == "HALT") {
+        binary.push_back(0xff);  // HALT opcode
+    } else if (tokens[0] == "PUSH") {
+        binary.push_back(0x30);  // PUSH opcode
+        if (tokens.size() <= 1) {
+            std::cerr
+                << "[Fatal Error]: Expected register after PUSH instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint8_t value = std::stoi(tokens[1]);
+        binary.push_back(value);
+    } else if (tokens[0] == "POP") {
+        binary.push_back(0x31);  // POP opcode
+        if (tokens.size() <= 1) {
+            std::cerr
+                << "[Fatal Error]: Expected register after POP instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint8_t value = std::stoi(tokens[1]);
+        binary.push_back(value);
+    } else if (tokens[0] == "PRINT") {
+        binary.push_back(0xf0);  // PRINT opcode
+        if (tokens.size() <= 1) {
+            std::cerr
+                << "[Fatal Error]: Expected register after PRINT instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint8_t value = std::stoi(tokens[1]);
+        binary.push_back(value);
+    } else if (tokens[0] == "MOV_REG") {
+        binary.push_back(0x04);  // MOV_REG opcode
+        if (tokens.size() <= 2) {
+            std::cerr
+                << "[Fatal Error]: Expected two registers after MOV_REG instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint8_t reg = std::stoi(tokens[1]);
+        binary.push_back(reg);
+        reg = std::stoi(tokens[2]);
+        binary.push_back(reg);
+    } else if (tokens[0] == "ADD") {
+        binary.push_back(0x10);  // ADD opcode
+        if (tokens.size() <= 2) {
+            std::cerr
+                << "[Fatal Error]: Expected register after ADD instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint8_t reg = std::stoi(tokens[1]);
+        binary.push_back(reg);
+        reg = std::stoi(tokens[2]);
+        binary.push_back(reg);
+    } else if (tokens[0] == "SUB") {
+        binary.push_back(0x11);  // SUB opcode
+        if (tokens.size() <= 2) {
+            std::cerr
+                << "[Fatal Error]: Expected register after SUB instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint8_t reg = std::stoi(tokens[1]);
+        binary.push_back(reg);
+        reg = std::stoi(tokens[2]);
+        binary.push_back(reg);
+    } else if (tokens[0] == "CMP") {
+        binary.push_back(0x12);  // CMP opcode
+        if (tokens.size() <= 2) {
+            std::cerr
+                << "[Fatal Error]: Expected register after CMP instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint8_t reg = std::stoi(tokens[1]);
+        binary.push_back(reg);
+        reg = std::stoi(tokens[2]);
+        binary.push_back(reg);
+    } else if (tokens[0] == "JMP") {
+        binary.push_back(0x20);  // JMP opcode
+        if (tokens.size() <= 1) {
+            std::cerr
+                << "[Fatal Error]: Expected 16-bit address after JMP instruction."
+                << std::endl;
+            exit(1);
+        }
+
+        uint16_t addr = symbols[tokens[1]];  // 16-bit address
+        push16bits(binary, addr);
+    } else if (tokens[0] == "JEQ") {
+        binary.push_back(0x21);  // JEQ opcode
+        if (tokens.size() <= 1) {
+            std::cerr
+                << "[Fatal Error]: Expected 16-bit address after JEQ instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint16_t addr = symbols[tokens[1]];  // 16-bit address
+        push16bits(binary, addr);
+    } else if (tokens[0] == "JNE") {
+        binary.push_back(0x22);  // JNE opcode
+        if (tokens.size() <= 1) {
+            std::cerr
+                << "[Fatal Error]: Expected 16-bit address after JNE instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint16_t addr = symbols[tokens[1]];  // 16-bit address
+        push16bits(binary, addr);
+    } else if (tokens[0] == "LOAD_VAL") {
+        binary.push_back(0x01);  // LOAD_VAL opcode
+        if (tokens.size() <= 2) {
+            std::cerr
+                << "[Fatal Error]: Expected register and value after LOAD_VAL instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint8_t reg = std::stoi(tokens[1]);
+        binary.push_back(reg);
+        uint16_t addr = std::stoi(tokens[2]);  // 16-bit address
+        push16bits(binary, addr);
+    } else if (tokens[0] == "LOAD_MEM") {
+        binary.push_back(0x02);  // LOAD_MEM opcode
+        if (tokens.size() <= 2) {
+            std::cerr
+                << "[Fatal Error]: Expected register and value after LOAD_MEM instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint8_t reg = std::stoi(tokens[1]);
+        binary.push_back(reg);
+        uint16_t addr = std::stoi(tokens[2]);  // 16-bit address
+        push16bits(binary, addr);
+    } else if (tokens[0] == "STORE_MEM") {
+        binary.push_back(0x03);  // STORE_MEM opcode
+        if (tokens.size() <= 2) {
+            std::cerr
+                << "[Fatal Error]: Expected register and value after STORE_MEM instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint16_t addr = std::stoi(tokens[1]);  // 16-bit address
+        push16bits(binary, addr);
+        uint8_t reg = std::stoi(tokens[2]);
+        binary.push_back(reg);
+    }
+    return binary;
 }
