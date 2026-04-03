@@ -199,7 +199,6 @@ vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols
                 << std::endl;
             exit(1);
         }
-
         uint16_t addr = symbols[tokens[1]];  // 16-bit address
         push16bits(binary, addr);
     } else if (tokens[0] == "JEQ") {
