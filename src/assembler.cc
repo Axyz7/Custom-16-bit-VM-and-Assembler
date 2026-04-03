@@ -65,6 +65,7 @@ void buildSymbolTable(vector<string> lines) {
 
     uint16_t line_no = 1;
     for (auto &line : lines) {
+        uint16_t line_no = 1;
         tokens = tokenize(line);
         size_t first = tokens[0].find_first_of(":");
         if (first != string::npos) {
