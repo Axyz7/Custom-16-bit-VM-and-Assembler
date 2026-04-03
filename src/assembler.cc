@@ -65,7 +65,6 @@ void buildSymbolTable(vector<string> lines) {
 
     uint16_t line_no = 1;
     for (auto &line : lines) {
-        uint16_t line_no = 1;
         tokens = tokenize(line);
         size_t first = tokens[0].find_first_of(":");
         if (first != string::npos) {
@@ -98,4 +97,11 @@ uint8_t parseRegister(string regStr) {
         exit(0);
     }
     return regcode;  // returns int, unnecessary to change to hex
+}
+
+void push16bits(vector<uint8_t> &binary, uint16_t value) {
+    // pushes low byte and high byte of a 16 bit value perfectly
+    // little endian byte order
+    binary.push_back(value & 0xFF);
+    binary.push_back((value >> 8) & 0xFF);
 }
