@@ -2,7 +2,7 @@
 #define Memory_H
 
 #include "vm.h"
-
+#define STACK_LIMIT 0x4000
 #include <stdbool.h>
 #include <stdint.h>
 uint8_t read_memory(VirtualMachine *vm, uint32_t address);
@@ -12,5 +12,8 @@ void stack_push(VirtualMachine *vm, uint16_t value);
 uint16_t stack_pop(VirtualMachine *vm);
 void write_mem16(VirtualMachine *vm, uint16_t addr, uint16_t val);
 uint16_t read_mem16(VirtualMachine *vm, uint16_t addr);
+
+void dump_memory(VirtualMachine*vm,uint16_t start_address, uint16_t size);
+
 
 #endif
