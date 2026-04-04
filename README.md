@@ -35,8 +35,10 @@ make clean
 2. Compile the text file into raw binary using the assembler.  
 3. Execute the binary using the virtual machine.
 
-./assembler test.asm   \# Generates program.bin  
-./vm program.bin       \# Boots the VM and runs the binary
+```
+./assembler test.asm   # Generates program.bin  
+./vm program.bin       # Boots the VM and runs the binary
+```
 
 ## **📜 Instruction Set Architecture (ISA)**
 
