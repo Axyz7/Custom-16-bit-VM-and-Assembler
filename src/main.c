@@ -1,6 +1,7 @@
 #include "../include/memory.h"
 #include "../include/vm.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 void load_program(VirtualMachine *vm, const char *filepath) {
