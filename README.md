@@ -14,15 +14,20 @@ The Virtual Machine is written in pure **C** to emphasize low-level memory manip
 ## **⚙️ Build Instructions**
 
 This project uses a standard Makefile for streamlined compilation.  
-\# Clone the repository  
-git clone \[https://github.com/Axyz7/Custom-16-bit-VM-and-Assembler.git\](https://github.com/Axyz7/Custom-16-bit-VM-and-Assembler.git)  
+#### Clone the repository 
+```
+git clone [https://github.com/Axyz7/Custom-16-bit-VM-and-Assembler.git\](https://github.com/Axyz7/Custom-16-bit-VM-and-Assembler.git)  
 cd Custom-16-bit-VM-and-Assembler
-
-\# Compile both the VM and the Assembler  
+```
+#### Compile both the VM and the Assembler  
+```
 make all
+```
 
-\# Clean compiled binaries  
+#### Clean compiled binaries  
+```
 make clean
+```
 
 ## **🚀 Running a Program**
 
