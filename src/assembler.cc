@@ -1,4 +1,7 @@
+#include "../include/assembler.h"
+
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -59,7 +62,6 @@ uint16_t getInstructionSize(const string &mnemonic) {
 }
 
 map<string, uint16_t> buildSymbolTable(vector<string> lines) {
-    size_t total_lines = lines.size();
     uint16_t address_counter = 0;
     std::map<string, uint16_t> symbol_table;
     vector<string> tokens;
@@ -109,8 +111,7 @@ void push16bits(vector<uint8_t> &binary, uint16_t value) {
     binary.push_back((value >> 8) & 0xFF);
 }
 
-vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols) {
-    vector<uint8_t> binary;
+void assembleLine(vector<uint8_t> binary, vector<string> tokens, map<string, uint16_t> symbols) {
     if (tokens[0] == "HALT") {
         binary.push_back(0xff);  // HALT opcode
     } else if (tokens[0] == "PUSH") {
@@ -258,5 +259,53 @@ vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols
         uint8_t reg = std::stoi(tokens[2]);
         binary.push_back(reg);
     }
-    return binary;
+}
+
+void saveBinary(string &filename, vector<uint8_t> &binary) {
+    // std::ios::binary is CRITICAL here
+    std::ofstream outFile(filename, std::ios::out | std::ios::binary);
+
+    if (!outFile) {
+        std::cerr << "Error: Could not open file " << filename << " for writing." << std::endl;
+        exit(1);
+    }
+    outFile.write(reinterpret_cast<const char *>(binary.data()), binary.size());
+    outFile.close();
+    std::cout << "Successfully wrote " << binary.size() << " bytes to " << filename << std::endl;
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        std::cerr
+            << "[Fatal Error]: Missing source and output file path."
+            << std::endl;
+        exit(1);
+    } else if (argc < 3) {
+        std::cerr
+            << "[Fatal Error]: Missing output file path."
+            << std::endl;
+        exit(1);
+    }
+
+    std::ifstream is(argv[1]);
+    if (!is.is_open()) {
+        std::cerr << "Error: " << std::strerror(errno) << std::endl;
+        return 1;
+    }
+
+    std::string line;
+    vector<string> lines;
+    while (std::getline(is, line)) {
+        if (line.empty()) continue;
+        lines.push_back(line);
+    }
+    map<string, uint16_t> symbols = buildSymbolTable(lines);
+    vector<uint8_t> binary;
+    for (auto &line : lines) {
+        vector<string> tokens = tokenize(line);
+        assembleLine(binary, tokens, symbols);
+    }
+    std::string filename = argv[2];
+    saveBinary(filename, binary);
+    return 0;
 }
