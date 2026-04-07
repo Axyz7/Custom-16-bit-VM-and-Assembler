@@ -38,7 +38,7 @@ void init_vm(VirtualMachine *vm);
 
 uint8_t fetch_byte(VirtualMachine *vm);
 uint16_t fetch_word(VirtualMachine *vm);
-void write_mem16(VirtualMachine *vm, uint16_t addr, uint16_t val) ;
+void write_mem16(VirtualMachine *vm, uint16_t addr, uint16_t val);
 uint16_t read_mem16(VirtualMachine *vm, uint16_t addr);
 void execute_instruction(VirtualMachine *vm, uint8_t opcode);
 void run_vm(VirtualMachine *vm);

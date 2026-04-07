@@ -1,5 +1,6 @@
 #include "../include/memory.h"
 #include "../include/vm.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +14,7 @@ void load_program(VirtualMachine *vm, const char *filepath) {
     uint16_t address = 0x0000;
     int current_byte;
     while ((current_byte = fgetc(file)) != EOF) {
-        write_memory(vm, address++, (uint8_t)current_byte);
+        write_memory(vm, address++, (uint8_t) current_byte);
     }
     fclose(file);
     printf("[SYSTEM]: Successfully loaded %d bytes.\n", address);
@@ -30,8 +31,8 @@ int main(int argc, char *argv[]) {
         printf("[SYSTEM]: Launching RUN MODE...\n");
         VirtualMachine my_vm;
         init_vm(&my_vm);
-        load_program(&my_vm, argv[2]); // Load the .bin file
-        run_vm(&my_vm);                // Boot the CPU
+        load_program(&my_vm, argv[2]);  // Load the .bin file
+        run_vm(&my_vm);                 // Boot the CPU
     } else {
         printf("Error: Unknown command.\n");
     }

@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void init_vm(VirtualMachine *vm) {
+    void init_vm(VirtualMachine *vm) {
     for (int i = 0; i < MEMORY_SIZE; i++)
         vm->memory[i] = 0;
     for (int i = 0; i < 4; i++)
@@ -23,7 +23,7 @@ void init_vm(VirtualMachine *vm) {
 }
 
 uint8_t fetch_byte(VirtualMachine *vm) {
-    return read_memory(vm,vm->pc++);
+    return read_memory(vm, vm->pc++);
 }
 
 uint16_t fetch_word(VirtualMachine *vm) {
@@ -101,9 +101,9 @@ void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
             if (!vm->zf) vm->pc = addr;
             break;
         }
-        case OP_JLT:{
-            uint16_t addr= fetch_word(vm);
-            if(vm->nf) vm->pc=addr;
+        case OP_JLT: {
+            uint16_t addr = fetch_word(vm);
+            if (vm->nf) vm->pc = addr;
             break;
         }
         case OP_PUSH: {

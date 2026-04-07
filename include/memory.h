@@ -13,7 +13,6 @@ uint16_t stack_pop(VirtualMachine *vm);
 void write_mem16(VirtualMachine *vm, uint16_t addr, uint16_t val);
 uint16_t read_mem16(VirtualMachine *vm, uint16_t addr);
 
-void dump_memory(VirtualMachine*vm,uint16_t start_address, uint16_t size);
-
+void dump_memory(VirtualMachine *vm, uint16_t start_address, uint16_t size);
 
 #endif
