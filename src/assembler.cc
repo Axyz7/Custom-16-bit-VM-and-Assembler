@@ -127,7 +127,7 @@ void push16bits(vector<uint8_t> &binary, uint16_t value) {
     binary.push_back((value >> 8) & 0xFF);
 }
 
-void assembleLine(vector<uint8_t> binary, const vector<string> &tokens, map<string, uint16_t> &symbols) {
+void assembleLine(vector<uint8_t> &binary, const vector<string> &tokens, map<string, uint16_t> &symbols) {
     if (tokens[0] == "HALT") {
         binary.push_back(0xff);  // HALT opcode
     } else if (tokens[0] == "PUSH") {
