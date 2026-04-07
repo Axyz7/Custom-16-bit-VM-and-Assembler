@@ -2,10 +2,6 @@
 
 #include "../include/memory.h"
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 331636b (style: reorder includes for consistency)
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -101,9 +97,9 @@ void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
             if (!vm->zf) vm->pc = addr;
             break;
         }
-        case OP_JLT: {
-            uint16_t addr = fetch_word(vm);
-            if (vm->nf) vm->pc = addr;
+        case OP_JLT:{
+            uint16_t addr= fetch_word(vm);
+            if(vm->nf) vm->pc=addr;
             break;
         }
         case OP_PUSH: {
