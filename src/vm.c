@@ -14,7 +14,6 @@ void init_vm(VirtualMachine *vm) {
         vm->registers[i] = 0;
     vm->pc = 0x0000;
     vm->sp = 0xFFFD;  // stack grows downwards, changed the sp intial to down by 2 bytes because so that the stack pointer doesnt wraps around and always keep the pointer at the odd bits, such as 0xFFFD OR 0xFFFB , as suppose there was a pop func called when the sp was at 0xFFFE then the sp willl wrap to 0x0000
-    vm->sp = 0xFFFD;  // stack grows downwards, changed the sp intial to down by 2 bytes because so that the stack pointer doesnt wraps around and always keep the pointer at the odd bits, such as 0xFFFD OR 0xFFFB , as suppose there was a pop func called when the sp was at 0xFFFE then the sp willl wrap to 0x0000
     vm->zf = false;
     vm->is_running = true;
 }
@@ -96,6 +95,11 @@ void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
         case OP_JNE: {
             uint16_t addr = fetch_word(vm);
             if (!vm->zf) vm->pc = addr;
+            break;
+        }
+        case OP_JLT:{
+            uint16_t addr= fetch_word(vm);
+            if(vm->nf) vm->pc=addr;
             break;
         }
         case OP_PUSH: {
