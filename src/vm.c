@@ -98,6 +98,11 @@ void execute_instruction(VirtualMachine *vm, uint8_t opcode) {
             if (!vm->zf) vm->pc = addr;
             break;
         }
+        case OP_JLT:{
+            uint16_t addr= fetch_word(vm);
+            if(vm->nf) vm->pc=addr;
+            break;
+        }
         case OP_PUSH: {
             uint8_t reg = fetch_byte(vm);
             stack_push(vm, vm->registers[reg]);

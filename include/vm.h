@@ -27,6 +27,7 @@ typedef struct {
 #define OP_JMP 0x20
 #define OP_JEQ 0x21
 #define OP_JNE 0x22
+#define OP_JLT 0x23
 #define OP_PUSH 0x30
 #define OP_POP 0x31
 #define OP_PRINT 0xF0
