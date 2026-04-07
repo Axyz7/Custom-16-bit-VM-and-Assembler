@@ -51,6 +51,7 @@ uint16_t getInstructionSize(const string &mnemonic) {
         {"JMP", 3},
         {"JEQ", 3},
         {"JNE", 3},
+        {"JLT", 3},
         {"LOAD_VAL", 4},
         {"LOAD_MEM", 4},
         {"STORE_MEM", 4},

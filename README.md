@@ -56,6 +56,7 @@ Our custom CPU supports 13 distinct instructions.
 | 0x20 | JMP | addr | Unconditional jump to a memory address. |
 | 0x21 | JEQ | addr | Jumps to address if the Zero Flag (ZF) is true (Equal). |
 | 0x22 | JNE | addr | Jumps to address if the Zero Flag (ZF) is false (Not Equal). |
+| 0x23 | JLT | addr | Jumps to address if the Negative Flag (NF) is true (Less Than). |
 | 0x30 | PUSH | reg | Pushes a 16-bit register value onto the stack. |
 | 0x31 | POP | reg | Pops a 16-bit value off the stack into a register. |
 | 0xF0 | PRINT | reg | Prints the integer and hex value of a register to standard output. |
