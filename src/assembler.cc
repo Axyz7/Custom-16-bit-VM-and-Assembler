@@ -10,7 +10,7 @@ using std::map;
 using std::string;
 using std::vector;
 
-string trim(string &str) {
+string cleanup(string &str) {
     // removes comment from assembly code
     size_t semicol = str.find_first_of(";");
     if (semicol != string::npos) {
@@ -130,8 +130,8 @@ void assembleLine(vector<uint8_t> binary, vector<string> tokens, map<string, uin
                 << std::endl;
             exit(1);
         }
-        uint8_t value = std::stoi(tokens[1]);
-        binary.push_back(value);
+        uint8_t reg = parseRegister(tokens[1]);
+        binary.push_back(reg);
     } else if (tokens[0] == "POP") {
         binary.push_back(0x31);  // POP opcode
         if (tokens.size() <= 1) {
@@ -140,8 +140,8 @@ void assembleLine(vector<uint8_t> binary, vector<string> tokens, map<string, uin
                 << std::endl;
             exit(1);
         }
-        uint8_t value = std::stoi(tokens[1]);
-        binary.push_back(value);
+        uint8_t reg = parseRegister(tokens[1]);
+        binary.push_back(reg);
     } else if (tokens[0] == "PRINT") {
         binary.push_back(0xf0);  // PRINT opcode
         if (tokens.size() <= 1) {
@@ -150,8 +150,8 @@ void assembleLine(vector<uint8_t> binary, vector<string> tokens, map<string, uin
                 << std::endl;
             exit(1);
         }
-        uint8_t value = std::stoi(tokens[1]);
-        binary.push_back(value);
+        uint8_t reg = parseRegister(tokens[1]);
+        binary.push_back(reg);
     } else if (tokens[0] == "MOV_REG") {
         binary.push_back(0x04);  // MOV_REG opcode
         if (tokens.size() <= 2) {
@@ -160,45 +160,45 @@ void assembleLine(vector<uint8_t> binary, vector<string> tokens, map<string, uin
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
-        reg = std::stoi(tokens[2]);
+        reg = parseRegister(tokens[2]);
         binary.push_back(reg);
     } else if (tokens[0] == "ADD") {
         binary.push_back(0x10);  // ADD opcode
         if (tokens.size() <= 2) {
             std::cerr
-                << "[Fatal Error]: Expected register after ADD instruction."
+                << "[Fatal Error]: Expected two registers after ADD instruction."
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
-        reg = std::stoi(tokens[2]);
+        reg = parseRegister(tokens[2]);
         binary.push_back(reg);
     } else if (tokens[0] == "SUB") {
         binary.push_back(0x11);  // SUB opcode
         if (tokens.size() <= 2) {
             std::cerr
-                << "[Fatal Error]: Expected register after SUB instruction."
+                << "[Fatal Error]: Expected two registers after SUB instruction."
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
-        reg = std::stoi(tokens[2]);
+        reg = parseRegister(tokens[2]);
         binary.push_back(reg);
     } else if (tokens[0] == "CMP") {
         binary.push_back(0x12);  // CMP opcode
         if (tokens.size() <= 2) {
             std::cerr
-                << "[Fatal Error]: Expected register after CMP instruction."
+                << "[Fatal Error]: Expected two registers after CMP instruction."
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
-        reg = std::stoi(tokens[2]);
+        reg = parseRegister(tokens[2]);
         binary.push_back(reg);
     } else if (tokens[0] == "JMP") {
         binary.push_back(0x20);  // JMP opcode
@@ -230,6 +230,16 @@ void assembleLine(vector<uint8_t> binary, vector<string> tokens, map<string, uin
         }
         uint16_t addr = symbols[tokens[1]];  // 16-bit address
         push16bits(binary, addr);
+    } else if (tokens[0] == "JLT") {
+        binary.push_back(0x23);  // JLT opcode
+        if (tokens.size() <= 1) {
+            std::cerr
+                << "[Fatal Error]: Expected 16-bit address after JLT instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint16_t addr = symbols[tokens[1]];  // 16-bit address
+        push16bits(binary, addr);
     } else if (tokens[0] == "LOAD_VAL") {
         binary.push_back(0x01);  // LOAD_VAL opcode
         if (tokens.size() <= 2) {
@@ -238,7 +248,7 @@ void assembleLine(vector<uint8_t> binary, vector<string> tokens, map<string, uin
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
         uint16_t addr = std::stoi(tokens[2]);  // 16-bit address
         push16bits(binary, addr);
@@ -250,7 +260,7 @@ void assembleLine(vector<uint8_t> binary, vector<string> tokens, map<string, uin
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
         uint16_t addr = std::stoi(tokens[2]);  // 16-bit address
         push16bits(binary, addr);
@@ -264,17 +274,19 @@ void assembleLine(vector<uint8_t> binary, vector<string> tokens, map<string, uin
         }
         uint16_t addr = std::stoi(tokens[1]);  // 16-bit address
         push16bits(binary, addr);
-        uint8_t reg = std::stoi(tokens[2]);
+        uint8_t reg = parseRegister(tokens[2]);
         binary.push_back(reg);
     }
 }
 
 void saveBinary(string &filename, vector<uint8_t> &binary) {
-    // std::ios::binary is CRITICAL here
     std::ofstream outFile(filename, std::ios::out | std::ios::binary);
-
     if (!outFile) {
-        std::cerr << "Error: Could not open file " << filename << " for writing." << std::endl;
+        std::cerr
+            << "[Fatal Error]: Could not open file "
+            << filename
+            << " for writing."
+            << std::endl;
         exit(1);
     }
     outFile.write(reinterpret_cast<const char *>(binary.data()), binary.size());
@@ -305,6 +317,7 @@ int main(int argc, char *argv[]) {
     vector<string> lines;
     while (std::getline(is, line)) {
         if (line.empty()) continue;
+        line = cleanup(line);
         lines.push_back(line);
     }
     map<string, uint16_t> symbols = buildSymbolTable(lines);
