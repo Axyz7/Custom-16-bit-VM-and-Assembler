@@ -69,7 +69,7 @@ uint16_t getInstructionSize(const string &mnemonic) {
     return 0;  // Error case
 }
 
-map<string, uint16_t> buildSymbolTable(vector<string> lines) {
+map<string, uint16_t> buildSymbolTable(vector<string> &lines) {
     uint16_t address_counter = 0;
     std::map<string, uint16_t> symbol_table;
     vector<string> tokens;
@@ -99,6 +99,14 @@ map<string, uint16_t> buildSymbolTable(vector<string> lines) {
 }
 
 uint8_t parseRegister(string regStr) {
+    if (regStr.size() < 2) {
+        std::cerr
+            << "[Fatal Error]: Invalid register "
+            << regStr
+            << " was found."
+            << std::endl;
+        exit(1);
+    }
     uint8_t regcode = regStr[1] - '0';
     if (regcode > 3) {
         std::cerr
@@ -119,7 +127,7 @@ void push16bits(vector<uint8_t> &binary, uint16_t value) {
     binary.push_back((value >> 8) & 0xFF);
 }
 
-void assembleLine(vector<uint8_t> binary, vector<string> tokens, map<string, uint16_t> symbols) {
+void assembleLine(vector<uint8_t> binary, const vector<string> &tokens, map<string, uint16_t> &symbols) {
     if (tokens[0] == "HALT") {
         binary.push_back(0xff);  // HALT opcode
     } else if (tokens[0] == "PUSH") {
