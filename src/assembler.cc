@@ -328,10 +328,13 @@ int main(int argc, char *argv[]) {
         line = cleanup(line);
         lines.push_back(line);
     }
+
     map<string, uint16_t> symbols = buildSymbolTable(lines);
     vector<uint8_t> binary;
     for (auto &line : lines) {
         vector<string> tokens = tokenize(line);
+        // skip label name
+        if (tokens[0].back() == ':') continue;
         assembleLine(binary, tokens, symbols);
     }
     std::string filename = argv[2];
