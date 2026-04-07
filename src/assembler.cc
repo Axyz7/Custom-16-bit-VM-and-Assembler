@@ -10,7 +10,13 @@ using std::map;
 using std::string;
 using std::vector;
 
-string trim(const string &str) {
+string trim(string &str) {
+    // removes comment from assembly code
+    size_t semicol = str.find_first_of(";");
+    if (semicol != string::npos) {
+        str = str.substr(0, semicol);
+    }
+
     size_t first = str.find_first_not_of(" \t");
     // fully empty (containing whitespace) string will be trimmed fully
     if (first == string::npos) return "";
@@ -56,7 +62,7 @@ uint16_t getInstructionSize(const string &mnemonic) {
         {"LOAD_MEM", 4},
         {"STORE_MEM", 4},
     };
-    
+
     if (inst_size.find(mnemonic) != inst_size.end()) {
         return inst_size[mnemonic];
     }
