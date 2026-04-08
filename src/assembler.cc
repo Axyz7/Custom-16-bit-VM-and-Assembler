@@ -1,11 +1,11 @@
 #include "../include/assembler.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
-#include <cstring>
 
 using std::map;
 using std::string;
