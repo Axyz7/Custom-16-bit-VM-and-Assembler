@@ -1,4 +1,7 @@
+#include "../include/assembler.h"
+
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -7,7 +10,13 @@ using std::map;
 using std::string;
 using std::vector;
 
-string trim(const string &str) {
+string cleanup(string &str) {
+    // removes comment from assembly code
+    size_t semicol = str.find_first_of(";");
+    if (semicol != string::npos) {
+        str = str.substr(0, semicol);
+    }
+
     size_t first = str.find_first_not_of(" \t");
     // fully empty (containing whitespace) string will be trimmed fully
     if (first == string::npos) return "";
@@ -53,14 +62,14 @@ uint16_t getInstructionSize(const string &mnemonic) {
         {"LOAD_MEM", 4},
         {"STORE_MEM", 4},
     };
+
     if (inst_size.find(mnemonic) != inst_size.end()) {
         return inst_size[mnemonic];
     }
     return 0;  // Error case
 }
 
-map<string, uint16_t> buildSymbolTable(vector<string> lines) {
-    size_t total_lines = lines.size();
+map<string, uint16_t> buildSymbolTable(vector<string> &lines) {
     uint16_t address_counter = 0;
     std::map<string, uint16_t> symbol_table;
     vector<string> tokens;
@@ -90,6 +99,14 @@ map<string, uint16_t> buildSymbolTable(vector<string> lines) {
 }
 
 uint8_t parseRegister(string regStr) {
+    if (regStr.size() < 2) {
+        std::cerr
+            << "[Fatal Error]: Invalid register "
+            << regStr
+            << " was found."
+            << std::endl;
+        exit(1);
+    }
     uint8_t regcode = regStr[1] - '0';
     if (regcode > 3) {
         std::cerr
@@ -110,8 +127,7 @@ void push16bits(vector<uint8_t> &binary, uint16_t value) {
     binary.push_back((value >> 8) & 0xFF);
 }
 
-vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols) {
-    vector<uint8_t> binary;
+void assembleLine(vector<uint8_t> &binary, const vector<string> &tokens, map<string, uint16_t> &symbols) {
     if (tokens[0] == "HALT") {
         binary.push_back(0xff);  // HALT opcode
     } else if (tokens[0] == "PUSH") {
@@ -122,8 +138,8 @@ vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols
                 << std::endl;
             exit(1);
         }
-        uint8_t value = std::stoi(tokens[1]);
-        binary.push_back(value);
+        uint8_t reg = parseRegister(tokens[1]);
+        binary.push_back(reg);
     } else if (tokens[0] == "POP") {
         binary.push_back(0x31);  // POP opcode
         if (tokens.size() <= 1) {
@@ -132,8 +148,8 @@ vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols
                 << std::endl;
             exit(1);
         }
-        uint8_t value = std::stoi(tokens[1]);
-        binary.push_back(value);
+        uint8_t reg = parseRegister(tokens[1]);
+        binary.push_back(reg);
     } else if (tokens[0] == "PRINT") {
         binary.push_back(0xf0);  // PRINT opcode
         if (tokens.size() <= 1) {
@@ -142,8 +158,8 @@ vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols
                 << std::endl;
             exit(1);
         }
-        uint8_t value = std::stoi(tokens[1]);
-        binary.push_back(value);
+        uint8_t reg = parseRegister(tokens[1]);
+        binary.push_back(reg);
     } else if (tokens[0] == "MOV_REG") {
         binary.push_back(0x04);  // MOV_REG opcode
         if (tokens.size() <= 2) {
@@ -152,45 +168,45 @@ vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
-        reg = std::stoi(tokens[2]);
+        reg = parseRegister(tokens[2]);
         binary.push_back(reg);
     } else if (tokens[0] == "ADD") {
         binary.push_back(0x10);  // ADD opcode
         if (tokens.size() <= 2) {
             std::cerr
-                << "[Fatal Error]: Expected register after ADD instruction."
+                << "[Fatal Error]: Expected two registers after ADD instruction."
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
-        reg = std::stoi(tokens[2]);
+        reg = parseRegister(tokens[2]);
         binary.push_back(reg);
     } else if (tokens[0] == "SUB") {
         binary.push_back(0x11);  // SUB opcode
         if (tokens.size() <= 2) {
             std::cerr
-                << "[Fatal Error]: Expected register after SUB instruction."
+                << "[Fatal Error]: Expected two registers after SUB instruction."
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
-        reg = std::stoi(tokens[2]);
+        reg = parseRegister(tokens[2]);
         binary.push_back(reg);
     } else if (tokens[0] == "CMP") {
         binary.push_back(0x12);  // CMP opcode
         if (tokens.size() <= 2) {
             std::cerr
-                << "[Fatal Error]: Expected register after CMP instruction."
+                << "[Fatal Error]: Expected two registers after CMP instruction."
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
-        reg = std::stoi(tokens[2]);
+        reg = parseRegister(tokens[2]);
         binary.push_back(reg);
     } else if (tokens[0] == "JMP") {
         binary.push_back(0x20);  // JMP opcode
@@ -222,6 +238,16 @@ vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols
         }
         uint16_t addr = symbols[tokens[1]];  // 16-bit address
         push16bits(binary, addr);
+    } else if (tokens[0] == "JLT") {
+        binary.push_back(0x23);  // JLT opcode
+        if (tokens.size() <= 1) {
+            std::cerr
+                << "[Fatal Error]: Expected 16-bit address after JLT instruction."
+                << std::endl;
+            exit(1);
+        }
+        uint16_t addr = symbols[tokens[1]];  // 16-bit address
+        push16bits(binary, addr);
     } else if (tokens[0] == "LOAD_VAL") {
         binary.push_back(0x01);  // LOAD_VAL opcode
         if (tokens.size() <= 2) {
@@ -230,7 +256,7 @@ vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
         uint16_t addr = std::stoi(tokens[2]);  // 16-bit address
         push16bits(binary, addr);
@@ -242,7 +268,7 @@ vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols
                 << std::endl;
             exit(1);
         }
-        uint8_t reg = std::stoi(tokens[1]);
+        uint8_t reg = parseRegister(tokens[1]);
         binary.push_back(reg);
         uint16_t addr = std::stoi(tokens[2]);  // 16-bit address
         push16bits(binary, addr);
@@ -256,8 +282,62 @@ vector<uint8_t> assembleLine(vector<string> tokens, map<string, uint8_t> symbols
         }
         uint16_t addr = std::stoi(tokens[1]);  // 16-bit address
         push16bits(binary, addr);
-        uint8_t reg = std::stoi(tokens[2]);
+        uint8_t reg = parseRegister(tokens[2]);
         binary.push_back(reg);
     }
-    return binary;
+}
+
+void saveBinary(string &filename, vector<uint8_t> &binary) {
+    std::ofstream outFile(filename, std::ios::out | std::ios::binary);
+    if (!outFile) {
+        std::cerr
+            << "[Fatal Error]: Could not open file "
+            << filename
+            << " for writing."
+            << std::endl;
+        exit(1);
+    }
+    outFile.write(reinterpret_cast<const char *>(binary.data()), binary.size());
+    outFile.close();
+    std::cout << "Successfully wrote " << binary.size() << " bytes to " << filename << std::endl;
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        std::cerr
+            << "[Fatal Error]: Missing source and output file path."
+            << std::endl;
+        exit(1);
+    } else if (argc < 3) {
+        std::cerr
+            << "[Fatal Error]: Missing output file path."
+            << std::endl;
+        exit(1);
+    }
+
+    std::ifstream is(argv[1]);
+    if (!is.is_open()) {
+        std::cerr << "Error: " << std::strerror(errno) << std::endl;
+        return 1;
+    }
+
+    std::string line;
+    vector<string> lines;
+    while (std::getline(is, line)) {
+        if (line.empty()) continue;
+        line = cleanup(line);
+        lines.push_back(line);
+    }
+
+    map<string, uint16_t> symbols = buildSymbolTable(lines);
+    vector<uint8_t> binary;
+    for (auto &line : lines) {
+        vector<string> tokens = tokenize(line);
+        // skip label name
+        if (tokens[0].back() == ':') continue;
+        assembleLine(binary, tokens, symbols);
+    }
+    std::string filename = argv[2];
+    saveBinary(filename, binary);
+    return 0;
 }
