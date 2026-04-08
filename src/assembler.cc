@@ -325,7 +325,6 @@ int main(int argc, char *argv[]) {
     std::string line;
     vector<string> lines;
     while (std::getline(is, line)) {
-        if (line.empty()) continue;
         line = cleanup(line);
         if (line.empty()) continue;
         lines.push_back(line);
