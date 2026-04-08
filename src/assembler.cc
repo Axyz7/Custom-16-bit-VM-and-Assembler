@@ -1,6 +1,7 @@
 #include "../include/assembler.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <map>
