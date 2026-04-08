@@ -8,7 +8,7 @@ CFLAGS = -Wall -Wextra -Iinclude
 VM_TARGET = vm 
 
 # The Source Files inside the src directory
-VM_SRCS = src/main.c src/vm.c src/Memory.c
+VM_SRCS = src/main.c src/vm.c src/memory.c
 # VM_SRCS = $(wildcard src/*.c)
 
 # Default target
