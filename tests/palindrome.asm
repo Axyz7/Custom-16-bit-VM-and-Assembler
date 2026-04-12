@@ -1,80 +1,69 @@
-; ==========================================================
-; ALGORITHM: 3-Digit Palindrome Checker
-;
-; A 3-digit number is a palindrome if its HUNDREDS digit
-; equals its UNITS digit.  (e.g. 121 → 1 == 1 ✓)
-;
-; Example used: 121  → IS a palindrome  → PRINT OUTPUT: 1
-; Change the first LOAD_VAL to 123 to test a non-palindrome
-;                             → NOT a palindrome → PRINT OUTPUT: 0
-;
-; Method:
-;   Step 1 – Divide N by 100 via repeated subtraction
-;            → quotient = hundreds digit, remainder = last 2 digits
-;   Step 2 – Divide remainder by 10 via repeated subtraction
-;            → what is left over = units digit
-;   Step 3 – Compare hundreds digit with units digit
-;
-; Memory used:
-;   0x2000 = saved hundreds digit
-; ==========================================================
+; 3-digit palindrome checker
+; a number is a palindrome if first and last digit are the same
+; ex: 121 -> yes, 123 -> no
+; prints 1 if palindrome, 0 if not
 
-LOAD_VAL R0, 121        ; R0 = number to test (try 123 for non-palindrome)
-LOAD_VAL R3, 1          ; R3 = constant 1 (kept throughout)
+; how it works:
+; divide by 100 to get hundreds digit
+; then get units digit from whats left
+; compare the two
+
+; mem 0x2000 = hundreds digit stored here
+
+LOAD_VAL R0, 121     ; number to check (change to 123 to test false case)
+LOAD_VAL R3, 1       ; constant 1, reused everywhere
 
 
-; ----------------------------------------------------------
-; STEP 1: Extract hundreds digit  (N / 100)
-;   R2 accumulates how many times we can subtract 100 from R0
-;   After the loop R0 holds the remainder (last 2 digits)
-; ----------------------------------------------------------
-LOAD_VAL R1, 100        ; R1 = 100
-LOAD_VAL R2, 0          ; R2 = hundreds-digit counter
+; step 1 - get the hundreds digit
+; just subtract 100 repeatedly and count how many times
+
+LOAD_VAL R1, 100
+LOAD_VAL R2, 0       ; counter starts at 0
 
 HDIV_LOOP:
-    CMP R0, R1          ; remaining - 100
-    JLT HDIV_DONE       ; remaining < 100  → done extracting hundreds
-    SUB R0, R1          ; remaining -= 100
-    ADD R2, R3          ; hundreds++
-    JMP HDIV_LOOP
+CMP R0, R1           ; is whats left >= 100?
+JLT HDIV_DONE        ; nope, done
+SUB R0, R1           ; take away 100
+ADD R2, R3           ; count it
+JMP HDIV_LOOP
 
 HDIV_DONE:
-STORE_MEM 0x2000, R2    ; save hundreds digit to RAM
-; R0 now = last-two-digit remainder  (e.g. 21 for 121)
+STORE_MEM 0x2000, R2  ; save hundreds digit
+; R0 has remainder now (like 21 if input was 121)
 
 
-; ----------------------------------------------------------
-; STEP 2: Extract units digit  (last-two-digit remainder % 10)
-;   Keep subtracting 10 until what is left is < 10;
-;   that leftover is the units digit.
-; ----------------------------------------------------------
-LOAD_VAL R1, 10         ; R1 = 10
-LOAD_VAL R2, 0          ; R2 = tens accumulator (result discarded)
+; step 2 - get the units digit
+; subtract 10 until less than 10, whatever is left = units digit
+
+LOAD_VAL R1, 10
+LOAD_VAL R2, 0       ; dont actually need R2 here but using for tens count anyway
 
 UDIV_LOOP:
-    CMP R0, R1          ; remaining - 10
-    JLT UDIV_DONE       ; remaining < 10  → R0 = units digit
-    SUB R0, R1          ; remaining -= 10
-    ADD R2, R3          ; tens++ (counted but not needed)
-    JMP UDIV_LOOP
+CMP R0, R1           ; less than 10 yet?
+JLT UDIV_DONE
+SUB R0, R1           ; remove 10
+ADD R2, R3           ; tens++ (not used but whatever)
+JMP UDIV_LOOP
 
 UDIV_DONE:
-; R0 = units digit of original number  (e.g. 1 for 121)
+; R0 = units digit now
 
 
-; ----------------------------------------------------------
-; STEP 3: Compare hundreds digit == units digit
-; ----------------------------------------------------------
-LOAD_MEM R1, 0x2000     ; R1 = hundreds digit (retrieved from RAM)
-CMP R0, R1              ; units - hundreds
-JEQ IS_PALINDROME       ; result = 0 → digits match → palindrome
+; step 3 - compare hundreds vs units
+; if equal its a palindrome
+
+LOAD_MEM R1, 0x2000   ; get the hundreds digit back
+CMP R0, R1            ; compare
+JEQ IS_PALINDROME     ; if same -> palindrome
+
 
 NOT_PALINDROME:
-    LOAD_VAL R0, 0
-    PRINT R0            ; PRINT OUTPUT: 0 (0x0000) — NOT a palindrome
-    HALT
+LOAD_VAL R0, 0
+PRINT R0              ; prints 0
+HALT
+
 
 IS_PALINDROME:
-    LOAD_VAL R0, 1
-    PRINT R0            ; PRINT OUTPUT: 1 (0x0001) — IS a palindrome
-    HALT
+LOAD_VAL R0, 1
+PRINT R0              ; prints 1
+HALT
